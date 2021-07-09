@@ -133,8 +133,8 @@ int main(int argc, char** argv, char** envp) {
         return 2;
     }
 
-    double elpsed_time = GetTimeProcess(hProcess, args.time) * 1e-6;
-    std::cerr << "Elapsed time: " << elpsed_time << " ms\n";
+    double elapsed_time = GetTimeProcess(hProcess, args.time) * 1e-6;
+    std::cerr << "Elapsed time: " << elapsed_time << " ms\n";
 
     return 0;
 }
