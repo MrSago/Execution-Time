@@ -124,13 +124,13 @@ int main(int argc, char** argv, char** envp) {
     Args args;
     if (!parseArg(argc, argv, &args)) {
         std::cerr << "Usage: " << argv[0] << " -r [path to run interpreter] (optional) -f [path to file] -w [waiting time in ms]\n";
-        return 0;
+        return 1;
     }
 
     HANDLE hProcess = Run(args.options.get());
     if (!hProcess) {
         std::cerr << "Can't run new process! Error code: " << GetLastError() << '\n';
-        return 0;
+        return 2;
     }
 
     double elpsed_time = GetTimeProcess(hProcess, args.time) * 1e-6;
