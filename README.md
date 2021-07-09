@@ -6,7 +6,7 @@
 
 #### Examples
 - Run python script with maximum waiting time is 1000 ms.
-⚠️ Python interpreter must to be in _%PATH%_ and _greetings.py_ in _cwd_.
+    ⚠️ Python interpreter must to be in _%PATH%_ and _greetings.py_ in _cwd_.
     >   _et.exe -r python -f greetings.py -w 1000_
 
 
