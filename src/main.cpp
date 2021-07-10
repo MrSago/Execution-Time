@@ -86,14 +86,16 @@ HANDLE Run(char* options) {
     return pi.hProcess;
 }
 
-long long GetTimeProcess(HANDLE hp, DWORD time) {
+int GetTimeProcess(HANDLE hProcess, DWORD time, long long* el_time) {
     auto start = std::chrono::high_resolution_clock::now();
-    DWORD ret_code = WaitForSingleObject(hp, time);
+    DWORD ret_code = WaitForSingleObject(hProcess, time);
     auto stop = std::chrono::high_resolution_clock::now();
+
+    int err_code = static_cast<int>(GetLastError());
 
     switch (ret_code) {
         case WAIT_ABANDONED:
-            std::cerr << "Process not signaled! Error code: " << GetLastError() << '\n';
+            std::cerr << "Process not signaled. Error code: " << err_code << '\n';
         break;
 
         case WAIT_OBJECT_0:
@@ -102,21 +104,22 @@ long long GetTimeProcess(HANDLE hp, DWORD time) {
 
         case WAIT_TIMEOUT:
             std::cerr << "Time limit exceeded more than " << time << " ms\n";
-            TerminateProcess(hp, 0);
+            TerminateProcess(hProcess, 0);
         break;
 
         case WAIT_FAILED:
-            std::cerr << "Process failed. Error code: " << GetLastError() << '\n';
+            std::cerr << "Process failed. Error code: " << err_code << '\n';
         break;
 
         default:
-            std::cerr << "Unknown error. Error code: " << GetLastError() << '\n';
+            std::cerr << "Unknown error. Error code: " << err_code << '\n';
         break;
     }
 
-    CloseHandle(hp);
+    CloseHandle(hProcess);
 
-    return (stop - start).count();
+    *el_time = (stop - start).count();
+    return err_code;
 }
 
 
@@ -124,18 +127,19 @@ int main(int argc, char** argv, char** envp) {
     Args args;
     if (!parseArg(argc, argv, &args)) {
         std::cerr << "Usage: " << argv[0] << " -r [path to run interpreter] (optional) -f [path to file] -w [waiting time in ms]\n";
-        return 1;
+        return -1;
     }
 
     HANDLE hProcess = Run(args.options.get());
     if (!hProcess) {
         std::cerr << "Can't run new process! Error code: " << GetLastError() << '\n';
-        return 2;
+        return -2;
     }
 
-    double elapsed_time = GetTimeProcess(hProcess, args.time) * 1e-6;
-    std::cerr << "Elapsed time: " << elapsed_time << " ms\n";
+    long long elapsed_time;
+    int last_err = GetTimeProcess(hProcess, args.time, &elapsed_time);
+    std::cerr << "Elapsed time: " << elapsed_time * 1e-6 << " ms\n";
 
-    return 0;
+    return last_err;
 }
 
